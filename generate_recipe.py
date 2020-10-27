@@ -1,6 +1,7 @@
 from recipe_scrapers import scrape_me
 import recipe
 import sys
+from sql_util import insert_recipe, get_all_recipes
 
 url = str(sys.argv[1])
 
@@ -11,15 +12,10 @@ scraper = scrape_me(url)
 # A: You can give it a try with the wild_mode option! If there is Schema/Recipe available it will work just fine.
 # scraper = scrape_me('https://www.feastingathome.com/tomato-risotto/', wild_mode=True)
 
-scraper.title()
-scraper.total_time()
-scraper.yields()
-# print(scraper.ingredients())
-scraper.instructions()
-scraper.image()
-scraper.host()
-scraper.links()
+new_recipe = recipe.Recipe(scraper.title(), scraper.total_time(), scraper.yields(), scraper.ingredients(), scraper.instructions(), url)
+insert_recipe(new_recipe)
+print()
 
-
-new_recipe = recipe.Recipe(scraper.title(), scraper.total_time())
-print(new_recipe)
+for recipe in get_all_recipes():
+    print(recipe)
+    print()
