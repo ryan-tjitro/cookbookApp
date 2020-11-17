@@ -1,0 +1,57 @@
+{% extends "navbar_base.html" %}
+
+{% block title %}Add Recipe{% endblock %}
+
+{% block links %}
+<!-- Custom fonts for this template-->
+<link href="/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+<!-- Custom styles for this template-->
+<link href="/static/css/sb-admin.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<body class="bg-dark">
+
+  <div class="container">
+    {% if errorReason %}
+    <div class="alert alert-danger" role="alert">
+      {{ errorReason }}
+    </div>
+    {% elif success %}
+    <div class="alert alert-success" role="alert">
+      Recipe successfully created!
+    </div>
+    {% endif %}
+    <div class="card mx-auto mt-5">
+      <div class="card-header">Add Recipe Via Link</div>
+      <div class="card-body">
+        <form method="post" action="/addViaLink/">
+            {% csrf_token %}
+          <label for="id_url"> Recipe Link: </label>
+          <div class="form-group">
+            <div class="form-label-group">
+              {{ form.url }}
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Add Recipe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("id_url").classList.add("form-control");
+    document.getElementById("id_url").placeholder = "Username";
+    document.getElementById("id_url").type = "text";
+    document.getElementById("id_url").required = "required";
+    document.getElementById("id_url").autofocus = "autofocus";
+  </script>
+  <!-- Bootstrap core JavaScript-->
+  <script src="/static/vendor/jquery/jquery.min.js"></script>
+  <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+</body>
+{% endblock %}

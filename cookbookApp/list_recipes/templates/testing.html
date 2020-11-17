@@ -1,0 +1,40 @@
+{% extends "navbar_base.html" %}
+
+{% block title %}Test Page{% endblock %}
+
+{% block links %}
+<!-- Custom fonts for this template-->
+<link href="/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+<!-- Custom styles for this template-->
+<link href="/static/css/sb-admin.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+      {{ recipe.title }} <br>
+      {% if recipe.time != -1 %}
+        {{ recipe.time }} min <br>
+      {% endif %}
+      {% if recipe.recipe_yield %}
+        {{ recipe.recipe_yield }} <br>
+      {% endif %}
+      {% if recipe.instructions %}
+        {{ recipe.instructions }} <br>
+      {% endif %}
+      {% if recipe.original_url %}
+        <a href={{ recipe.original_url }}> Original URL </a> <br>
+      {% endif %}
+      {% if ingredients %}
+      <ul>
+        {% for ingredient in ingredients %}
+          <li>
+            {{ ingredient.ingredient_info }}
+          </li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+</div>
+{% endblock %}
