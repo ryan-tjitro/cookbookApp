@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from list_recipes import views
+from django.conf import settings # new
+from django.conf.urls.static import static # new
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,5 +25,9 @@ urlpatterns = [
     path('addManually/', views.AddManually.as_view(), name="add manually"),
     path('', views.Index.as_view(), name='index'),
     path('login/', views.Login.as_view(), name='login'),
-    path(r'test/<title>', views.Test.as_view(), name="test")
-]
+    path(r'test/<title>', views.Test.as_view(), name="test"),
+    path(r'addImage/<title>', views.addImage, name="addImage"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG: # new
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
