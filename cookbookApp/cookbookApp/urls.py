@@ -23,5 +23,6 @@ urlpatterns = [
     path('addManually/', views.AddManually.as_view(), name="add manually"),
     path('', views.Index.as_view(), name='index'),
     path('login/', views.Login.as_view(), name='login'),
-    path(r'test/<title>', views.Test.as_view(), name="test")
+    path(r'test/<title>', views.Test.as_view(), name="test"),
+    path('register/', views.UserRegistration.as_view(), name="register")
 ]
