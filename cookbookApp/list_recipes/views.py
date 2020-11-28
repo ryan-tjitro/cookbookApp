@@ -3,7 +3,7 @@ from list_recipes.forms import UrlForm, CreateRecipeForm, UserRegistrationForm
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -12,6 +12,10 @@ from recipe_scrapers import scrape_me, WebsiteNotImplementedError
 import logging
 
 # Create your views here.
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/')
+
 class Index(LoginRequiredMixin, View):
     template = 'index.html'
     login_url = '/login/'
@@ -95,7 +99,7 @@ class Login(View):
             login(request, user)
             return HttpResponseRedirect('/')
         else:
-            return render(request, self.template, {'form': form})
+            return render(request, self.template, {'form': form, 'login_failed': True})
 
 class Test(View):
     template = 'testing.html'
