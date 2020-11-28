@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from list_recipes.forms import UrlForm, CreateRecipeForm
+from list_recipes.forms import UrlForm, CreateRecipeForm, UserRegistrationForm
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Employee, Recipe, Ingredient, RecipeImage
 from .forms import CreateRecipeForm, ImageForm, UrlForm
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from recipe_scrapers import scrape_me, WebsiteNotImplementedError
 import logging
 
@@ -27,6 +29,10 @@ def addImage(request, title):
     return HttpResponseRedirect('/test/' + title)
 
 # Create your views here.
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/')
+
 class Index(LoginRequiredMixin, View):
     template = 'index.html'
     login_url = '/login/'
@@ -103,14 +109,14 @@ class Login(View):
 
     def post(self, request):
         form = AuthenticationForm(request.POST)
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username', "")
+        password = request.POST.get('password', "")
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return HttpResponseRedirect('/')
         else:
-            return render(request, self.template, {'form': form})
+            return render(request, self.template, {'form': form, 'login_failed': True})
 
 class Test(View):
     template = 'testing.html'
@@ -136,3 +142,37 @@ class Test(View):
 
         updateRecipe()
         return self.get(request, title)
+
+class UserRegistration(View):
+    template = "UserRegistration.html"
+    PASSWORD_MISMATCH = "Passwords don't match!"
+    INVALID_FIELDS = "Invalid fields. Please try again!"
+    USERNAME_IN_USE = "A user with this name already exists!"
+    EMAIL_IN_USE = "This email has already been associated with another account!"
+
+    def get(self, request):
+        form = UserRegistrationForm()
+        return render(request, self.template, {'form': form})
+
+    def post(self, request):
+        form = UserRegistrationForm(request.POST)
+        if not form.is_valid():
+            try:
+                password = form.clean_password2()
+            except ValidationError:
+                return render(request, self.template, {'form': form,  "errorReason": self.PASSWORD_MISMATCH})
+            if len(User.objects.filter(username = request.POST.get("username", ""))):
+                return render(request, self.template, {'form': form,  "errorReason": self.USERNAME_IN_USE})
+            if len(User.objects.filter(email = request.POST.get("email", ""))):
+                return render(request, self.template, {'form': form,  "errorReason": self.EMAIL_IN_USE})
+            return render(request, self.template, {'form': form,  "errorReason": self.INVALID_FIELDS})
+        else:
+            password = request.POST.get("password1", False)
+            username = request.POST.get("username", False)
+            first_name = request.POST.get("first_name", False)
+            last_name = request.POST.get("last_name", False)
+            email = request.POST.get("email", False)
+            logging.debug("values are not problem")
+            user= User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name, email=email)
+            login(request, user)
+            return HttpResponseRedirect('/')

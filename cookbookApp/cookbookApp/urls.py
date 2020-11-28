@@ -27,7 +27,7 @@ urlpatterns = [
     path('login/', views.Login.as_view(), name='login'),
     path(r'test/<title>', views.Test.as_view(), name="test"),
     path(r'addImage/<title>', views.addImage, name="addImage"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-if settings.DEBUG: # new
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('logout/', views.user_logout, name='logout'),
+    path('register/', views.UserRegistration.as_view(), name="register")
+]
++ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
