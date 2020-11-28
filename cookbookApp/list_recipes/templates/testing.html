@@ -42,6 +42,94 @@
           {% endfor %}
       </ul>
       {% endif %}
+      {% if images %}
+        <ol>
+        {% for img in images %}
+           <li> <img src="{{ img.image.url }}" alt="img"> </li>
+        {% endfor %}
+        <ol>
+      {% endif %}
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addImageModal">
+        Add Image
+      </button>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editRecipeModal">
+        Edit Recipe
+      </button>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="editRecipe-modal-wrapper">
+  <div class="modal fade" id="editRecipeModal" tabindex="-1" aria-labelledby="editRecipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editRecipeModalLabel">Edit Recipe</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="id_title"> Recipe Title: </label>
+              <div class="form-label-group">
+                {{ edit_recipe_form.title }}
+              </div>
+              <label for="id_time"> Recipe Time (in minutes): </label>
+              <div class="form-label-group">
+                {{ edit_recipe_form.time }}
+              </div>
+              <label for="id_recipe_yield"> Recipe Yield: </label>
+              <div class="form-label-group">
+                {{ edit_recipe_form.recipe_yield }}
+              </div>
+              <label for="id_instructions"> Instructions (enter each step on a new line): </label>
+              <div class="form-label-group">
+                {{ edit_recipe_form.instructions }}
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" name="editRecipeSubmit" class="btn btn-primary">Save Changes</button>
+        </div>
+        </form>
+      </div>
+    </div>
+ </div>
+
+<div class="addImage-modal-wrapper">
+  <div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post" enctype="multipart/form-data" action="/addImage/{{ recipe.title }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addImageModalLabel">Add Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            {% csrf_token %}
+            {{ image_upload_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" name="addImageSubmit" class="btn btn-primary">Add Image</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("id_title").classList.add("form-control");
+    document.getElementById("id_title").autofocus = "autofocus";
+    document.getElementById("id_time").classList.add("form-control");
+    document.getElementById("id_recipe_yield").classList.add("form-control");
+    document.getElementById("id_instructions").classList.add("form-control");
+  </script>
 {% endblock %}
