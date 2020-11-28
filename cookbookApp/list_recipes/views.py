@@ -30,7 +30,7 @@ class Index(LoginRequiredMixin, View):
                 if ingredient_form.is_valid() and ingredient_form.cleaned_data.get('ingredient'):
                     recipes = recipes.filter(ingredient__ingredient_info__icontains=ingredient_form.cleaned_data.get('ingredient'))
                     logging.debug(recipes)
-            return render(request, self.template, {'recipes': recipes.distinct(), 'formset': IngredientFormSet()})
+            return render(request, self.template, {'recipes': recipes.distinct(), 'formset': ingredients})
         return self.get(request)
 
 class AddAutomatic(LoginRequiredMixin, View):

@@ -94,9 +94,9 @@
 
         formNum++ //Increment the form number
         newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`) //Update the new form to have the correct form number
-        console.log(container)
         container.insertBefore(newForm, addButton) //Insert the new form at the end of the list of forms
         document.getElementById("id_form-" + formNum + "-ingredient").classList.add("form-control");
+        document.getElementById("id_form-" + formNum + "-ingredient").value = "";
         totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
       }
   </script>
