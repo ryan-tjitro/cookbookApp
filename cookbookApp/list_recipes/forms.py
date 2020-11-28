@@ -18,3 +18,6 @@ class UserRegistrationForm(UserCreationForm):
     first_name = forms.CharField(label="first_name")
     last_name = forms.CharField(label="last_name")
     email = forms.CharField(widget=forms.EmailInput)
+    
+class IngredientForm(forms.Form):
+    ingredient = forms.CharField(label="ingredient", required=False)

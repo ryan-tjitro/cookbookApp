@@ -192,7 +192,11 @@
         <div class="card mb-3">
           <div class="card-header">
             <i class="fas fa-table"></i>
-            Data Table Example</div>
+            Data Table Example
+            <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#filterRecipeModal">
+            Filter by ingredient
+            </button>
+          </div>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -280,6 +284,36 @@
     </div>
   </div>
 
+  <div class="filterRecipe-modal-wrapper">
+  <div class="modal fade" id="filterRecipeModal" tabindex="-1" aria-labelledby="filterRecipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filterRecipeModalLabel">Filter Recipe</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="formset_container" class="modal-body">
+          {% csrf_token %}
+          {{ formset.management_form }}
+          {% for ingredient_form in formset %}
+              <div class="ingredient-form py-1">
+                  {{ ingredient_form.ingredient }}
+              </div>
+          {% endfor %}
+          <button class="btn btn-primary" id="add-form" type="button">Add Another Filter</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" name="filterRecipeSubmit" class="btn btn-primary">Filter</button>
+        </div>
+        </form>
+      </div>
+    </div>
+ </div>
+
   <!-- Bootstrap core JavaScript-->
   <script src="/static/vendor/jquery/jquery.min.js"></script>
   <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -298,6 +332,32 @@
   <!-- Demo scripts for this page-->
   <script src="/static/js/demo/datatables-demo.js"></script>
   <script src="/static/js/demo/chart-area-demo.js"></script>
+
+  <script>
+    let allForm = document.querySelectorAll(".ingredient-form")
+    let container = document.querySelector("#formset_container")
+    let addButton = document.querySelector("#add-form")
+    let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+    let formNum = allForm.length-1
+    addButton.addEventListener('click', addForm)
+    for (var i = 0; i < allForm.length; i++) {
+      document.getElementById("id_form-" + i + "-ingredient").classList.add("form-control")
+    }
+
+    function addForm(e) {
+        e.preventDefault()
+
+        let newForm = allForm[0].cloneNode(true) //Clone the bird form
+        let formRegex = RegExp(`form-(\\d){1}-`,'g') //Regex to find all instances of the form number
+
+        formNum++ //Increment the form number
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`) //Update the new form to have the correct form number
+        container.insertBefore(newForm, addButton) //Insert the new form at the end of the list of forms
+        document.getElementById("id_form-" + formNum + "-ingredient").classList.add("form-control")
+        document.getElementById("id_form-" + formNum + "-ingredient").value = ""
+        totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
+      }
+  </script>
 
 </body>
 {% endblock %}

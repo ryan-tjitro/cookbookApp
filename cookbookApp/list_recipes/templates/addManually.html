@@ -40,6 +40,16 @@
             <div class="form-label-group">
               {{ form.recipe_yield }}
             </div>
+            <label for="#formset_container"> Ingredients: </label>
+            <div id="formset_container" class="form-label-group">
+              {{ formset.management_form }}
+              {% for ingredient_form in formset %}
+                  <div class="ingredient-form py-1">
+                      {{ ingredient_form.ingredient }}
+                  </div>
+              {% endfor %}
+              <button id="add-form" class="btn btn-primary" type="button">Add Another Ingredient</button>
+            </div>
             <label for="id_instructions"> Instructions (enter each step on a new line): </label>
             <div class="form-label-group">
               {{ form.instructions }}
@@ -64,6 +74,32 @@
 
   <!-- Core plugin JavaScript-->
   <script src="/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <script>
+    let allForm = document.querySelectorAll(".ingredient-form")
+    let container = document.querySelector("#formset_container")
+    let addButton = document.querySelector("#add-form")
+    let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+    let formNum = allForm.length-1
+    addButton.addEventListener('click', addForm)
+    for (var i = 0; i < allForm.length; i++) {
+      document.getElementById("id_form-" + i + "-ingredient").classList.add("form-control")
+    }
+
+    function addForm(e) {
+        e.preventDefault()
+
+        let newForm = allForm[0].cloneNode(true) //Clone the bird form
+        let formRegex = RegExp(`form-(\\d){1}-`,'g') //Regex to find all instances of the form number
+
+        formNum++ //Increment the form number
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`) //Update the new form to have the correct form number
+        container.insertBefore(newForm, addButton) //Insert the new form at the end of the list of forms
+        document.getElementById("id_form-" + formNum + "-ingredient").classList.add("form-control");
+        document.getElementById("id_form-" + formNum + "-ingredient").value = "";
+        totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
+      }
+  </script>
 
 </body>
 {% endblock %}
