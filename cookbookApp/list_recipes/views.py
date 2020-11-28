@@ -6,8 +6,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.formsets import formset_factory
-from .models import Employee, Recipe, Ingredient
-from .forms import CreateRecipeForm, IngredientForm, UrlForm
+from .models import Employee, Recipe, Ingredient, RecipeImage
+from .forms import CreateRecipeForm, ImageForm, IngredientForm, UrlForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from recipe_scrapers import scrape_me, WebsiteNotImplementedError
