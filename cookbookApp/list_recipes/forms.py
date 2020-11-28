@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 
 class UrlForm(forms.Form):
     url = forms.URLField(label='url')
@@ -9,3 +10,8 @@ class CreateRecipeForm(forms.Form):
     time = forms.IntegerField(label="time", required=False)
     instructions = forms.CharField(label="instructions", widget=forms.Textarea, required=False)
     # ingredients =
+
+class UserRegistrationForm(UserCreationForm):
+    first_name = forms.CharField(label="first_name")
+    last_name = forms.CharField(label="last_name")
+    email = forms.CharField(widget=forms.EmailInput)
