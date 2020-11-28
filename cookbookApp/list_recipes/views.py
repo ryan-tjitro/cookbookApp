@@ -5,7 +5,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms.formsets import formset_factory
 from .models import Employee, Recipe, Ingredient
+from .forms import CreateRecipeForm, IngredientForm, UrlForm
 from recipe_scrapers import scrape_me, WebsiteNotImplementedError
 import logging
 
@@ -15,8 +17,21 @@ class Index(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request):
+        IngredientFormSet = formset_factory(IngredientForm)
         recipes = Recipe.objects.filter(user = request.user)
-        return render(request, self.template, {'recipes': recipes})
+        return render(request, self.template, {'recipes': recipes, 'formset': IngredientFormSet()})
+
+    def post(self, request):
+        IngredientFormSet = formset_factory(IngredientForm)
+        ingredients = IngredientFormSet(request.POST)
+        if ingredients.is_valid():
+            recipes = Recipe.objects.filter(user = request.user)
+            for ingredient_form in ingredients:
+                if ingredient_form.is_valid() and ingredient_form.cleaned_data.get('ingredient'):
+                    recipes = recipes.filter(ingredient__ingredient_info__icontains=ingredient_form.cleaned_data.get('ingredient'))
+                    logging.debug(recipes)
+            return render(request, self.template, {'recipes': recipes.distinct(), 'formset': IngredientFormSet()})
+        return self.get(request)
 
 class AddAutomatic(LoginRequiredMixin, View):
     template = 'addAutomatic.html'
@@ -52,9 +67,12 @@ class AddManually(LoginRequiredMixin, View):
 
     def get(self, request):
         form = CreateRecipeForm()
-        return render(request, self.template, {'form': form})
+        IngredientFormSet = formset_factory(IngredientForm)
+        return render(request, self.template, {'formset': IngredientFormSet(), 'form': form})
 
     def post(self, request):
+        IngredientFormSet = formset_factory(IngredientForm)
+        ingredients = IngredientFormSet(request.POST)
         title = request.POST.get('title', "")
         recipe_yield = request.POST.get("recipe_yield", None)
         time = request.POST.get("time", "")
@@ -66,15 +84,15 @@ class AddManually(LoginRequiredMixin, View):
         if len(title) > 0:
            try:
                existing_recipe = Recipe.objects.filter(user = request.user).get(title = title)
-               return render(request, self.template, {'form': CreateRecipeForm(request.POST), "success": False, "errorReason": self.RECIPE_EXISTS}) #with error bc title already exists
+               return render(request, self.template, {'formset': IngredientFormSet(request.POST), 'form': CreateRecipeForm(request.POST), "success": False, "errorReason": self.RECIPE_EXISTS}) #with error bc title already exists
            except Recipe.DoesNotExist:
                new_recipe = Recipe.objects.create(user = request.user, time=time, instructions = instructions, title = title, recipe_yield = recipe_yield)
-               # for ingredient_description in scraper.ingredients():
-               #     new_ingredient = Ingredient.objects.create(recipe=new_recipe, ingredient_info=ingredient_description)
-               #     logging.debug("ingredient: {0}".format(ingredient_description))
-               return render(request, self.template, {'form': U(), "success": True})
+               for ingredient_form in ingredients:
+                   if ingredient_form.is_valid() and ingredient_form.cleaned_data.get('ingredient'):
+                       new_ingredient = Ingredient.objects.create(recipe=new_recipe, ingredient_info=ingredient_form.cleaned_data.get('ingredient'))
+               return render(request, self.template, {'formset': IngredientFormSet(), 'form': CreateRecipeForm(), "success": True})
         else:
-            return render(request, self.template, {'form': CreateRecipeForm(), "success": False, "errorReason": self.INVALID_TITLE}) #with error bc invalid name
+            return render(request, self.template, {'formset': IngredientFormSet(request.POST), 'form': CreateRecipeForm(request.POST), "success": False, "errorReason": self.INVALID_TITLE}) #with error bc invalid name
 
 class Login(View):
     template = 'login.html'
@@ -100,6 +118,7 @@ class Test(View):
 
     def get(self, request, title):
         recipe = Recipe.objects.filter(user = request.user).get(title = title)
+        recipe.instructions = recipe.instructions.split('\n')
         ingredients = Ingredient.objects.filter(recipe = recipe)
         logging.debug(ingredients)
         return render(request, self.template, {'recipe': recipe, 'ingredients': ingredients})

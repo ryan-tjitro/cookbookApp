@@ -21,7 +21,14 @@
         {{ recipe.recipe_yield }} <br>
       {% endif %}
       {% if recipe.instructions %}
-        {{ recipe.instructions }} <br>
+      <div> Instructions </div>
+      <ol>
+        {% for instruction in recipe.instructions %}
+          <li>
+            {{ instruction }}
+          </li>
+          {% endfor %}
+      </ol>
       {% endif %}
       {% if recipe.original_url %}
         <a href={{ recipe.original_url }}> Original URL </a> <br>

@@ -8,4 +8,6 @@ class CreateRecipeForm(forms.Form):
     recipe_yield = forms.CharField(label="recipe_yield", required=False)
     time = forms.IntegerField(label="time", required=False)
     instructions = forms.CharField(label="instructions", widget=forms.Textarea, required=False)
-    # ingredients =
+
+class IngredientForm(forms.Form):
+    ingredient = forms.CharField(label="ingredient", required=False)
