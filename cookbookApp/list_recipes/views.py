@@ -140,25 +140,41 @@ class Test(View):
 
     def get(self, request, title):
         recipe = Recipe.objects.filter(user = request.user).get(title = title)
-        recipe.instructions = recipe.instructions.split('\n')
         ingredients = Ingredient.objects.filter(recipe = recipe)
         images = RecipeImage.objects.filter(recipe = recipe)
         edit_recipe_form = CreateRecipeForm(initial={'title': recipe.title, 'time': recipe.time, 'recipe_yield': recipe.recipe_yield, 'instructions': recipe.instructions})
-        return render(request, self.template, {'images': images, 'recipe': recipe, 'ingredients': ingredients, 'image_upload_form': ImageForm(), 'edit_recipe_form': edit_recipe_form})
+        IngredientFormSet = formset_factory(IngredientForm)
+        ingredientForms = IngredientFormSet(initial=[{'ingredient': ingredient.ingredient_info} for ingredient in ingredients])
+        recipe.instructions = recipe.instructions.split('\n')
+        return render(request, self.template, {'images': images, 'recipe': recipe, 'ingredients': ingredients, 'image_upload_form': ImageForm(), 'edit_recipe_form': edit_recipe_form, 'ingredient_formset': ingredientForms})
 
     def post(self, request, title):
+        form = CreateRecipeForm(request.POST)
+        IngredientFormSet = formset_factory(IngredientForm)
+        ingredient_forms = IngredientFormSet(request.POST)
         def updateRecipe():
-            form = CreateRecipeForm(request.POST)
-            if form.is_valid():
-                time = int(request.POST['time']) if len(request.POST['time']) > 0 else -1
-                existing_recipe = Recipe.objects.filter(user = request.user).get(title = title)
-                existing_recipe.title = request.POST['title']
-                existing_recipe.recipe_yield = request.POST['recipe_yield']
-                existing_recipe.time = time
-                existing_recipe.instructions = request.POST['instructions']
-                existing_recipe.save()
+            time = int(request.POST['time']) if len(request.POST['time']) > 0 else -1
+            existing_recipe = Recipe.objects.filter(user = request.user).get(title = title)
+            existing_recipe.title = request.POST['title']
+            existing_recipe.recipe_yield = request.POST['recipe_yield']
+            existing_recipe.time = time
+            existing_recipe.instructions = request.POST['instructions']
+            existing_recipe.save()
 
-        updateRecipe()
+        def updateIngredients():
+            existing_recipe = Recipe.objects.filter(user = request.user).get(title = title)
+            new_ingredients = [ingredient_form.cleaned_data.get('ingredient') for ingredient_form in ingredient_forms if ingredient_form.is_valid() and ingredient_form.cleaned_data.get('ingredient')]
+            existing_ingredient_objects = Ingredient.objects.filter(recipe = existing_recipe)
+            existing_ingredients = [ingredient.ingredient_info for ingredient in existing_ingredient_objects]
+            to_add = [ingredient for ingredient in new_ingredients if ingredient not in existing_ingredients]
+            to_delete = [ingredient for ingredient in existing_ingredients if ingredient not in new_ingredients]
+            for ingredient in to_add:
+                Ingredient.objects.create(recipe=existing_recipe, ingredient_info=ingredient)
+            existing_ingredient_objects.filter(ingredient_info__in=to_delete).delete()
+
+        if form.is_valid():
+            updateRecipe()
+            updateIngredients()
         return self.get(request, title)
 
 class UserRegistration(View):
